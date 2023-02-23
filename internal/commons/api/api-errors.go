@@ -12,39 +12,42 @@ type APIError struct {
 	Message    string `json:"message,omitempty"`
 }
 
-func NewAPIError(st int, tp string, mt string, mg string) *APIError {
+func NewAPIError(st int, tp string, mt string, mg error) *APIError {
 	return &APIError{
 		StatusCode: st,
 		Type:       tp,
 		Method:     mt,
-		Message:    mg,
+		Message:    mg.Error(),
 	}
 }
 
 func (a *APIError) Error() string {
-	return fmt.Sprintf("error type %v - method %v - error message: %v", a.Type, a.Method, a.Message)
+	return fmt.Sprintf("status code: %v, error type: %v - method: %v - error message: %v", a.StatusCode, a.Type, a.Method, a.Message)
 }
 
-func (a *APIError) InvalidJSON(mt string, err error) *APIError {
-	a.StatusCode = http.StatusBadRequest
-	a.Type = "invalid-json"
-	a.Method = mt
-	a.Message = "Invalid or malformed JSON, " + err.Error()
-	return a
+func InvalidJSON(mt string, err error) *APIError {
+	return &APIError{
+		StatusCode: http.StatusBadRequest,
+		Type:       "invalid-json",
+		Method:     mt,
+		Message:    "Invalid or malformed JSON, " + err.Error(),
+	}
 }
 
-func (a *APIError) BadRequest(mt string, err error) *APIError {
-	a.StatusCode = http.StatusBadRequest
-	a.Type = "client-error"
-	a.Method = mt
-	a.Message = "Cannot process current request, " + err.Error()
-	return a
+func BadRequest(mt string, err error) *APIError {
+	return &APIError{
+		StatusCode: http.StatusBadRequest,
+		Type:       "client-error",
+		Method:     mt,
+		Message:    "Cannot process current request, " + err.Error(),
+	}
 }
 
-func (a *APIError) InternalServerError(mt string, err error) *APIError {
-	a.StatusCode = http.StatusInternalServerError
-	a.Type = "server-error"
-	a.Method = mt
-	a.Message = "Internal server error" + err.Error()
-	return a
+func InternalServerError(mt string, err error) *APIError {
+	return &APIError{
+		StatusCode: http.StatusInternalServerError,
+		Type:       "server-error",
+		Method:     mt,
+		Message:    "Internal server error" + err.Error(),
+	}
 }

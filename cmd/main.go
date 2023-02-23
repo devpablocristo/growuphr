@@ -25,8 +25,8 @@ func main() {
 	// 	userPort = defaultreserve-numberPort
 	// }
 
-	wg.Add(2)
-	go reserveNumber.LoadData(&wg)
+	wg.Add(1)
+	//go reserveNumber.LoadData(&wg)
 	go reserveNumber.StartApi(&wg, reserveNumberPort)
 	// go user.LoadData(&wg)
 	// go user.StartApi(&wg, userPort)

@@ -10,11 +10,13 @@ func HttpServer(port string, router http.Handler) {
 	log.Println("starting chi server")
 
 	httpServer := &http.Server{
-		Addr:         ":" + port,
-		Handler:      router,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  15 * time.Second,
+		Addr:           ":" + port,
+		Handler:        router,
+		ReadTimeout:    5 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		IdleTimeout:    15 * time.Second,
+		TLSConfig:      nil,
+		MaxHeaderBytes: 1 << 20,
 	}
 
 	go func() {

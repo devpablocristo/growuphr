@@ -3,10 +3,10 @@ package port
 import (
 	"context"
 
-	"github.com/devpablocristo/growuphr/reserve-number/domain"
+	domain "github.com/devpablocristo/growuphr/reserve-number/domain"
 )
 
-type Service interface {
+type Number interface {
 	GetNumbers(context.Context) (map[string]*domain.Number, error)
 	GetNumber(context.Context, string) (*domain.Number, error)
 	AddNumber(context.Context, *domain.Number) (*domain.Number, error)

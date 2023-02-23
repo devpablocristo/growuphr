@@ -26,6 +26,6 @@ func FailResponse(err *APIError) *APIResponse {
 	return &APIResponse{
 		Success: false,
 		Status:  err.StatusCode,
-		Result:  err.Error(),
+		Result:  err.Message,
 	}
 }

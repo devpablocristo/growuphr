@@ -1,3 +1,7 @@
+verificar aque el numero no esta en el storage
+
+
+
 Implementar:
 SOLID
 CORS
