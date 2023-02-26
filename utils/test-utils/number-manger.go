@@ -10,6 +10,13 @@ import (
 )
 
 var (
+	ResNum0 = &domain.ReservedNumber{
+		UUID:      "0",
+		Number:    &num0,
+		User:      &usr0,
+		CreatedAt: time.Time{},
+	}
+
 	ResNum1 = &domain.ReservedNumber{
 		UUID:      "1",
 		Number:    &num1,
@@ -21,6 +28,18 @@ var (
 		UUID:      "2",
 		Number:    &num2,
 		User:      &usr2,
+		CreatedAt: time.Time{},
+	}
+
+	num0 = domain.Number{
+		UUID:      "0",
+		Number:    0,
+		CreatedAt: time.Time{},
+	}
+
+	usr0 = domain.User{
+		UUID:      "0",
+		Username:  "client0",
 		CreatedAt: time.Time{},
 	}
 
@@ -48,6 +67,7 @@ var (
 		CreatedAt: time.Time{},
 	}
 
-	ErrorNewUsrTakenNumber     = cmsapi.NewAPIError(http.StatusOK, "taken-number", "AddReserveNumber", "application", fmt.Errorf("number '%v' already reserved, try with another one", ResNum1.Number.Number))
-	ErrorExistingUserNewNumber = cmsapi.NewAPIError(http.StatusOK, "taken-number", "AddReserveNumber", "application", fmt.Errorf("user '%v' has already reserved the number '%v'", ResNum1.User.Username, ResNum1.Number.Number))
+	ErrorZeroNumber   = cmsapi.NewAPIError(http.StatusOK, "taken-number", "AddReserveNumber", "application", fmt.Errorf("number '%v' is invalid, try with another one", ResNum0.Number.Number))
+	ErrorTakenNumber  = cmsapi.NewAPIError(http.StatusOK, "taken-number", "AddReserveNumber", "application", fmt.Errorf("number '%v' already reserved, try with another one", ResNum1.Number.Number))
+	ErrorExistingUser = cmsapi.NewAPIError(http.StatusOK, "taken-number", "AddReserveNumber", "application", fmt.Errorf("user '%v' has already reserved the number '%v'", ResNum1.User.Username, ResNum1.Number.Number))
 )

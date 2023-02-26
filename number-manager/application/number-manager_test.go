@@ -22,8 +22,9 @@ func TestNumberManager_AddReserveNumber(t *testing.T) {
 		wantErr                  bool
 		expectedErr              error
 		calledTimes              int
-		expectedCheckForNumber   bool
+		expectedCheckZeroNumber  bool
 		expectedCheckForUsername bool
+		expectedCheckForNumber   bool
 		expectedRN               *domain.ReservedNumber
 	}{
 		{
@@ -35,19 +36,24 @@ func TestNumberManager_AddReserveNumber(t *testing.T) {
 			wantErr:                  false,
 			expectedErr:              nil,
 			expectedRN:               nil,
-			expectedCheckForNumber:   false,
+			expectedCheckZeroNumber:  false,
 			expectedCheckForUsername: false,
+			expectedCheckForNumber:   false,
 			calledTimes:              1,
 		},
 		{
+			// no ocurre
+			// para crear un nuevo usuario se debe asignar un nuevo valido
+			// o sea, no existen nuevos usuarios sin numeros asignados
 			name: "existing username, new number",
 			args: args{
 				ctx:       context.Background(),
 				newResNum: utils.ResNum1,
 			},
 			wantErr:                  true,
-			expectedErr:              utils.ErrorExistingUserNewNumber,
+			expectedErr:              utils.ErrorExistingUser,
 			expectedRN:               utils.ResNum1,
+			expectedCheckZeroNumber:  false,
 			expectedCheckForNumber:   false,
 			expectedCheckForUsername: true,
 			calledTimes:              1,
@@ -59,10 +65,39 @@ func TestNumberManager_AddReserveNumber(t *testing.T) {
 				newResNum: utils.ResNum1,
 			},
 			wantErr:                  true,
-			expectedErr:              utils.ErrorNewUsrTakenNumber,
+			expectedErr:              utils.ErrorTakenNumber,
 			expectedRN:               utils.ResNum1,
-			expectedCheckForNumber:   true,
+			expectedCheckZeroNumber:  false,
 			expectedCheckForUsername: false,
+			expectedCheckForNumber:   true,
+			calledTimes:              1,
+		},
+		{
+			name: "existing username, taken number",
+			args: args{
+				ctx:       context.Background(),
+				newResNum: utils.ResNum1,
+			},
+			wantErr:                  true,
+			expectedErr:              utils.ErrorTakenNumber,
+			expectedRN:               utils.ResNum1,
+			expectedCheckZeroNumber:  false,
+			expectedCheckForUsername: true,
+			expectedCheckForNumber:   true,
+			calledTimes:              1,
+		},
+		{
+			name: "taken 0 as chosen number",
+			args: args{
+				ctx:       context.Background(),
+				newResNum: utils.ResNum0,
+			},
+			wantErr:                  true,
+			expectedErr:              utils.ErrorZeroNumber,
+			expectedRN:               utils.ResNum1,
+			expectedCheckZeroNumber:  true,
+			expectedCheckForUsername: true,
+			expectedCheckForNumber:   true,
 			calledTimes:              1,
 		},
 	}
@@ -72,18 +107,22 @@ func TestNumberManager_AddReserveNumber(t *testing.T) {
 			defer ctrl.Finish()
 			storageMock := mocks.NewMockStorage(ctrl)
 
-			storageMock.EXPECT().CheckForUsername(tt.args.ctx, tt.args.newResNum.User.Username).
-				Return(tt.expectedRN, tt.expectedCheckForUsername).
-				Times(tt.calledTimes)
-
-			storageMock.EXPECT().CheckForNumber(tt.args.ctx, tt.args.newResNum.Number.Number).
-				Return(tt.expectedRN, tt.expectedCheckForNumber).
-				Times(tt.calledTimes)
-
-			if !tt.expectedCheckForNumber && !tt.expectedCheckForUsername {
-				storageMock.EXPECT().Create(tt.args.ctx, tt.args.newResNum).
-					Return(tt.expectedErr).
+			if !tt.expectedCheckZeroNumber {
+				storageMock.EXPECT().CheckForUsername(tt.args.ctx, tt.args.newResNum.User.Username).
+					Return(tt.expectedRN, tt.expectedCheckForUsername).
 					Times(tt.calledTimes)
+
+				if !tt.expectedCheckForUsername {
+					storageMock.EXPECT().CheckForNumber(tt.args.ctx, tt.args.newResNum.Number.Number).
+						Return(tt.expectedRN, tt.expectedCheckForNumber).
+						Times(tt.calledTimes)
+
+					if !tt.expectedCheckForNumber {
+						storageMock.EXPECT().Create(tt.args.ctx, tt.args.newResNum).
+							Return(tt.expectedErr).
+							Times(tt.calledTimes)
+					}
+				}
 			}
 
 			nm := NewNumberManager(storageMock)

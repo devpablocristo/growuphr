@@ -31,31 +31,27 @@ func (h *Handler) ReserveNumber(w http.ResponseWriter, r *http.Request) {
 	body := r.Body
 	defer body.Close()
 
-	// stdlib query param
-	// localhost:8080/api/v1/number-service/reserve?unername={client1}
-	// userName := r.URL.Query().Get("id")
-	// if userName == "" {
-	// 	errMsg := "empty query param"
-	// 	w.Write([]byte(errMsg))
-	// 	log.Println(errMsg)
-	// 	return
-	// }
-
-	// chi path param
-	// localhost:8080/api/v1/number-service/reserve/client1
 	newUserName := chi.URLParam(r, "username")
 	if newUserName == "" {
 		// aplicar api error
-		errMsg := "empty path param"
-		w.Write([]byte(errMsg))
-		log.Println(errMsg)
+		err := errors.New("empty path param")
+		responseErr := cmsapi.BadRequest("AddNumber", "handler", err)
+		w.WriteHeader(responseErr.StatusCode)
+		err = json.NewEncoder(w).Encode(cmsapi.FailResponse(responseErr))
+		if err != nil {
+			log.Println(err.Error())
+			w.Write([]byte(err.Error()))
+			return
+		}
+		log.Println(responseErr.Error())
 		return
 	}
+
 	newUser := &domain.User{
 		Username: newUserName,
 	}
 
-	newNumber := &domain.Number{} //domain.Number
+	newNumber := &domain.Number{}
 	err := json.NewDecoder(body).Decode(newNumber)
 	if err != nil {
 		responseErr := cmsapi.InvalidJSON("AddNumber", "handler", err)
