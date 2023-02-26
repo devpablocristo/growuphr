@@ -4,7 +4,7 @@ import (
 	"os"
 	"sync"
 
-	reserveNumber "github.com/devpablocristo/growuphr/reserve-number/api"
+	numberManager "github.com/devpablocristo/growuphr/number-manager/api"
 )
 
 const defaultReserveNumberPort = "8080"
@@ -15,19 +15,19 @@ func main() {
 	wg := sync.WaitGroup{}
 	defer wg.Wait()
 
-	reserveNumberPort := os.Getenv("RESERVE-NUMBER_PORT")
+	reserveNumberPort := os.Getenv("number-manager_PORT")
 	if reserveNumberPort == "" {
 		reserveNumberPort = defaultReserveNumberPort
 	}
 
-	// userPort := os.Getenv("reserve-number_PORT")
+	// userPort := os.Getenv("number-manager_PORT")
 	// if userPort == "" {
-	// 	userPort = defaultreserve-numberPort
+	// 	userPort = defaultnumber-managerPort
 	// }
 
 	wg.Add(1)
 	//go reserveNumber.LoadData(&wg)
-	go reserveNumber.StartApi(&wg, reserveNumberPort)
+	go numberManager.StartApi(&wg, reserveNumberPort)
 	// go user.LoadData(&wg)
 	// go user.StartApi(&wg, userPort)
 
