@@ -3,82 +3,72 @@ package mapdb
 import (
 	"context"
 	"errors"
+	"fmt"
 
-	domain "github.com/devpablocristo/growuphr/reserve-number/domain"
+	"github.com/devpablocristo/growuphr/reserve-number/domain"
 )
 
 type MapDB struct {
-	mDB map[string]*domain.Number
+	mDB map[string]*domain.ReservedNumber
 }
 
 func NewMapDB() *MapDB {
-	m := make(map[string]*domain.Number)
+	m := make(map[string]*domain.ReservedNumber)
 	return &MapDB{
 		mDB: m,
 	}
 }
 
-func (m *MapDB) AddNumber(ctx context.Context, p *domain.Number) error {
-	m.mDB[p.UUID] = p
+func (m *MapDB) Create(ctx context.Context, rn *domain.ReservedNumber) error {
+	m.mDB[rn.UUID] = rn
+	fmt.Println(m.mDB[rn.UUID])
+
 	return nil
 }
 
-func (m *MapDB) GetUser(ctx context.Context, userName string) (*domain.Number, error) {
-	u, exist := m.mDB[userName]
+func (m *MapDB) Read(ctx context.Context, UUID string) (*domain.ReservedNumber, error) {
+	rn, exist := m.mDB[UUID]
 	if !exist {
-		return &domain.Number{}, errors.New("username not found")
+		return nil, errors.New("value not found")
 	}
-	return u, nil
+	return rn, nil
 }
 
-func (m *MapDB) AddUser(ctx context.Context, n *domain.Number) error {
-	m.mDB[n.UserName] = n
-	return nil
-}
-
-// function to check if a value present in the map
-func (m *MapDB) checkForValue(userValue int, students map[string]int) bool {
-
-	//traverse through the map
-	for _, value := range students {
-
-		//check if present value is equals to userValue
-		if value == userValue {
-
-			//if same return true
-			return true
+func (m *MapDB) CheckForUsername(checkUsr string) (*domain.ReservedNumber, bool) {
+	for _, rn := range m.mDB {
+		if rn.User.Username == checkUsr {
+			return rn, true
 		}
 	}
-
-	//if value not found return false
-	return false
+	return nil, false
 }
 
-func (m *MapDB) GetNumber(ctx context.Context, n int) (*domain.Number, error) {
-	u := m.mDB["n"]
-	return u, nil
+func (m *MapDB) CheckForNumber(checkNum int) (*domain.ReservedNumber, bool) {
+	for _, rn := range m.mDB {
+		if rn.Number.Number == checkNum {
+			return rn, true
+		}
+	}
+	return nil, false
 }
 
-func (m *MapDB) GetNumberByUUID(ctx context.Context, UUID string) (*domain.Number, error) {
-	p := m.mDB[UUID]
-	return p, nil
-}
-
-func (m *MapDB) ListNumbers(ctx context.Context) map[string]*domain.Number {
+func (m *MapDB) List(ctx context.Context) map[string]*domain.ReservedNumber {
 	// var results []domain.Number
 	// for _, Number := range m.mDB {
 	// 	results = append(results, *Number)
 	// }
 	// return results, nil
 
+	fmt.Println("storage: ")
+	fmt.Println(m)
 	return m.mDB
 }
 
-func (m *MapDB) DeleteNumber(ctx context.Context, UUID string) error {
+func (m *MapDB) Delete(ctx context.Context, UUID string) error {
 	delete(m.mDB, UUID)
 	return nil
 }
 
-func (m *MapDB) UpdateNumber(ctx context.Context, UUID string) error {
+func (m *MapDB) Update(ctx context.Context, UUID string) error {
 	return nil
 }

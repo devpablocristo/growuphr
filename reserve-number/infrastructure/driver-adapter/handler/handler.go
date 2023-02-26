@@ -2,9 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi"
 
@@ -14,12 +16,12 @@ import (
 )
 
 type Handler struct {
-	numberService port.Service
+	reserveNumberService port.NumberReserver
 }
 
-func NewHandler(ps port.Service) *Handler {
+func NewHandler(rns port.NumberReserver) *Handler {
 	return &Handler{
-		numberService: ps,
+		reserveNumberService: rns,
 	}
 }
 
@@ -29,25 +31,34 @@ func (h *Handler) ReserveNumber(w http.ResponseWriter, r *http.Request) {
 	body := r.Body
 	defer body.Close()
 
+	// stdlib query param
+	// localhost:8080/api/v1/number-service/reserve?unername={client1}
 	// userName := r.URL.Query().Get("id")
-	// if idQuery == "" {
-	// 	return errors.New(idQuery)
+	// if userName == "" {
+	// 	errMsg := "empty query param"
+	// 	w.Write([]byte(errMsg))
+	// 	log.Println(errMsg)
+	// 	return
 	// }
 
-	userName := chi.URLParam(r, "username")
+	// chi path param
+	// localhost:8080/api/v1/number-service/reserve/client1
+	newUserName := chi.URLParam(r, "username")
+	if newUserName == "" {
+		// aplicar api error
+		errMsg := "empty path param"
+		w.Write([]byte(errMsg))
+		log.Println(errMsg)
+		return
+	}
+	newUser := &domain.User{
+		Username: newUserName,
+	}
 
-	fmt.Println(userName)
-
-	// userName := r.h.URLParam(r, "username") // 👈 getting path param
-	// _, err := writer.Write([]byte("Hello " + username))
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-
-	var newNumber domain.Number
-	err := json.NewDecoder(body).Decode(&newNumber)
+	newNumber := &domain.Number{} //domain.Number
+	err := json.NewDecoder(body).Decode(newNumber)
 	if err != nil {
-		responseErr := cmsapi.InvalidJSON("handler.AddNumber", err)
+		responseErr := cmsapi.InvalidJSON("AddNumber", "handler", err)
 		w.WriteHeader(responseErr.StatusCode)
 		err = json.NewEncoder(w).Encode(cmsapi.FailResponse(responseErr))
 		if err != nil {
@@ -60,22 +71,34 @@ func (h *Handler) ReserveNumber(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	number, err := h.numberService.AddNumber(ctx, &newNumber)
+	//number, err := h.reserveNumberService.ReserveNumber(ctx, &newNumber, userName)
+	//err = h.reserveNumberService.ReserveNumber(ctx, newNumber, userName)
+
+	newResNum := &domain.ReservedNumber{
+		User:   newUser,
+		Number: newNumber,
+	}
+
+	err = h.reserveNumberService.AddReserveNumber(ctx, newResNum)
 	if err != nil {
-		responseErr := cmsapi.InternalServerError("handler.AddNumber", err)
-		w.WriteHeader(responseErr.StatusCode)
-		err = json.NewEncoder(w).Encode(cmsapi.FailResponse(responseErr))
-		if err != nil {
-			log.Println(err.Error())
-			w.Write([]byte(err.Error()))
+		var responseErr *cmsapi.APIError
+		if errors.As(err, &responseErr) {
+			w.WriteHeader(responseErr.StatusCode)
+			fmt.Println("entra aqui")
+			err = json.NewEncoder(w).Encode(cmsapi.SuccessResponse(responseErr.StatusCode, responseErr.Message))
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				log.Println(err.Error())
+				w.Write([]byte(err.Error()))
+				return
+			}
 			return
 		}
-		log.Println(responseErr)
-		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(w).Encode(cmsapi.SuccessResponse(http.StatusCreated, number))
+	msg := fmt.Sprintf("number '%v' reserve for client '%v'", strconv.Itoa(newNumber.Number), newUser.Username)
+	err = json.NewEncoder(w).Encode(cmsapi.SuccessResponse(http.StatusCreated, msg))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err.Error())

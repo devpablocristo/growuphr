@@ -1,0 +1,81 @@
+package application
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"time"
+
+	uuid "github.com/google/uuid"
+
+	port "github.com/devpablocristo/growuphr/reserve-number/application/port"
+	domain "github.com/devpablocristo/growuphr/reserve-number/domain"
+)
+
+type NumberService struct {
+	storage port.Storage
+}
+
+type Num interface {
+	domain.ReservedNumber
+}
+
+func NewNumberService(s port.Storage) *NumberService {
+	return &NumberService{
+		storage: s,
+	}
+}
+
+func convAnyToMapPtrNum(list map[string]any) (map[string]*domain.ReservedNumber, error) {
+	var numList map[string]*domain.ReservedNumber
+	data, err := json.Marshal(list)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, &numList)
+	if err != nil {
+		return nil, err
+	}
+	return numList, err
+}
+
+func (ns *NumberService) GetNumbers(ctx context.Context) (map[string]*domain.ReservedNumber, error) {
+	preNumList := ns.storage.List(ctx)
+	numList, err := convAnyToMapPtrNum(preNumList)
+	if err != nil {
+		return nil, err
+	}
+	return numList, nil
+}
+
+func (ns *NumberService) GetNumber(ctx context.Context, UUID string) (*domain.ReservedNumber, error) {
+	preNum, err := ns.storage.Read(ctx, UUID)
+	if err != nil {
+		return nil, err
+	}
+	num, ok := preNum.(*domain.ReservedNumber)
+	if !ok {
+		return nil, errors.New("converting type error")
+	}
+	return num, nil
+}
+
+func (ns *NumberService) AddNumber(ctx context.Context, n *domain.ReservedNumber) (*domain.ReservedNumber, error) {
+	n.UUID = uuid.New().String()
+	n.CreatedAt = time.Now()
+
+	err := ns.storage.Create(ctx, n)
+	if err != nil {
+		return &domain.ReservedNumber{}, err
+	}
+	return n, nil
+
+}
+
+func (ns *NumberService) UpdateNumber(ctx context.Context, UUID string) error {
+	return ns.storage.Update(ctx, UUID)
+}
+
+func (ns *NumberService) DeleteNumber(ctx context.Context, UUID string) error {
+	return ns.storage.Delete(ctx, UUID)
+}

@@ -1,0 +1,81 @@
+package application
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+
+	port "github.com/devpablocristo/growuphr/reserve-number/application/port"
+	domain "github.com/devpablocristo/growuphr/reserve-number/domain"
+)
+
+type UserService struct {
+	storage port.Storage
+}
+
+func NewUserService(s port.Storage) *UserService {
+	return &UserService{
+		storage: s,
+	}
+}
+
+func (us *UserService) AddUser(ctx context.Context, u *domain.User) error {
+	fmt.Println(u)
+
+	//1. revisar si existe el nombre de usuario
+	// eso lo tiene q hacer la base de datos
+
+	//2. si no exite guardarlo <-- de momento solo voy a guardar el usuario
+	err := us.storage.Create(ctx, u)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (us *UserService) GetUserByUserName(ctx context.Context, userName string) (*domain.User, error) {
+	// usrList, err := us.GetUser(ctx)
+	// if err != nil {
+	// 	// 1.2 verificar si numero fue ya reservado
+	// 	fmt.Println(err.Error())
+
+	// 	return nil, err
+	// }
+	// fmt.Println(usrList)
+	return nil, nil
+}
+
+func (us *UserService) GetUser(ctx context.Context, UUID string) (*domain.User, error) {
+	preUsr, err := us.storage.Read(ctx, UUID)
+	if err != nil {
+		return nil, err
+	}
+	usr, ok := preUsr.(*domain.User)
+	if !ok {
+		return nil, errors.New("converting type error")
+	}
+	return usr, nil
+}
+
+func (us *UserService) GetUsers(ctx context.Context) (map[string]*domain.User, error) {
+	preUsrList := us.storage.List(ctx)
+	usrList, err := convAnyToMapPtrNum(preUsrList)
+	if err != nil {
+		return nil, err
+	}
+	return usrList, nil
+}
+
+func convAnyToMapPtrNum(list map[string]any) (map[string]*domain.User, error) {
+	var usrList map[string]*domain.User
+	data, err := json.Marshal(list)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, &usrList)
+	if err != nil {
+		return nil, err
+	}
+	return usrList, err
+}

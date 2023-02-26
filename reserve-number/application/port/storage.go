@@ -1,12 +1,17 @@
 package port
 
-type Storage interface {
-	// AddNumber(context.Context, *domain.Number) error
-	// GetNumber(context.Context, string) (*domain.Number, error)
-	// ListNumbers(context.Context) map[string]*domain.Number
-	// DeleteNumber(context.Context, string) error
-	// UpdateNumber(context.Context, string) error
+import (
+	"context"
 
-	// AddUser(context.Context, *domain.User) error
-	// GetUser(context.Context, string) (*domain.User, error)
+	domain "github.com/devpablocristo/growuphr/reserve-number/domain"
+)
+
+type Storage interface {
+	Create(context.Context, *domain.ReservedNumber) error
+	Read(context.Context, string) (*domain.ReservedNumber, error)
+	List(context.Context) map[string]*domain.ReservedNumber
+	Delete(context.Context, string) error
+	Update(context.Context, string) error
+	CheckForUsername(string) (*domain.ReservedNumber, bool)
+	CheckForNumber(int) (*domain.ReservedNumber, bool)
 }

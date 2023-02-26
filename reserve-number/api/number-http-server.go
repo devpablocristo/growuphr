@@ -7,7 +7,7 @@ import (
 )
 
 func HttpServer(port string, router http.Handler) {
-	log.Println("starting chi server")
+	log.Println("starting server")
 
 	httpServer := &http.Server{
 		Addr:           ":" + port,
@@ -27,5 +27,5 @@ func HttpServer(port string, router http.Handler) {
 			}
 		}
 	}()
-	log.Printf("the chi server is ready to handle requests %s", httpServer.Addr)
+	log.Printf("the server is ready to handle requests %s", httpServer.Addr)
 }

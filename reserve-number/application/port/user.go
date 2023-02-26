@@ -9,4 +9,5 @@ import (
 type User interface {
 	AddUser(context.Context, *domain.User) error
 	GetUser(context.Context, string) (*domain.User, error)
+	GetUsers(context.Context) (map[string]*domain.User, error)
 }
