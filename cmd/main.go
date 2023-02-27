@@ -7,7 +7,11 @@ import (
 	numberManager "github.com/devpablocristo/growuphr/number-manager/api"
 )
 
-const defaultReserveNumberPort = "8080"
+const (
+	defaultReserveNumberPort = "8080"
+	port1                    = "8081"
+	port2                    = "8082"
+)
 
 //const defautUserPort = "8081"
 
@@ -25,9 +29,12 @@ func main() {
 	// 	userPort = defaultnumber-managerPort
 	// }
 
-	wg.Add(1)
+	wg.Add(3)
 	//go reserveNumber.LoadData(&wg)
 	go numberManager.StartApi(&wg, reserveNumberPort)
+	go numberManager.StartApi(&wg, port1)
+	go numberManager.StartApi(&wg, port2)
+
 	// go user.LoadData(&wg)
 	// go user.StartApi(&wg, userPort)
 

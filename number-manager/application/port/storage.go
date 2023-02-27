@@ -13,7 +13,6 @@ type Storage interface {
 	Read(context.Context, string) (*domain.ReservedNumber, error)
 	List(context.Context) map[string]*domain.ReservedNumber
 	Delete(context.Context, string) error
-	Update(context.Context, string) error
 	CheckForUsername(context.Context, string) (*domain.ReservedNumber, bool)
 	CheckForNumber(context.Context, int) (*domain.ReservedNumber, bool)
 }

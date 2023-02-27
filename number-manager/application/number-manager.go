@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	uuid "github.com/google/uuid"
@@ -17,15 +18,20 @@ import (
 
 type NumberManager struct {
 	storage port.Storage
+	mux     sync.Mutex
 }
 
 func NewNumberManager(st port.Storage) *NumberManager {
 	return &NumberManager{
 		storage: st,
+		mux:     sync.Mutex{},
 	}
 }
 
 func (nm *NumberManager) AddReserveNumber(ctx context.Context, newResNum *domain.ReservedNumber) error {
+	nm.mux.Lock()
+	defer nm.mux.Unlock()
+
 	if newResNum.Number.Number == 0 {
 		eMsg := fmt.Errorf("number '%v' is invalid, try with another one", newResNum.Number.Number)
 		err := cmsapi.NewAPIError(200, "taken-number", "AddReserveNumber", "application", eMsg)
@@ -68,6 +74,9 @@ func (nm *NumberManager) AddReserveNumber(ctx context.Context, newResNum *domain
 }
 
 func (nm *NumberManager) ReservedNumbers(ctx context.Context) (map[string]*domain.ReservedNumber, error) {
+	nm.mux.Lock()
+	defer nm.mux.Unlock()
+
 	nm.storage.List(ctx)
 	list := nm.storage.List(ctx)
 	if len(list) == 0 {

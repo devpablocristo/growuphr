@@ -99,9 +99,6 @@ func (h *Handler) ReserveNumber(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-lista de numeros y clientes asociados al numero
-*/
 func (h *Handler) ReservedNumbers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	list, err := h.numberManager.ReservedNumbers(ctx)

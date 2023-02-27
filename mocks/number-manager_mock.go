@@ -50,16 +50,16 @@ func (mr *MockNumberManagerMockRecorder) AddReserveNumber(arg0, arg1 interface{}
 }
 
 // ReservedNumbers mocks base method.
-func (m *MockNumberManager) ReservedNumbers(ctx context.Context) (map[string]*domain.ReservedNumber, error) {
+func (m *MockNumberManager) ReservedNumbers(arg0 context.Context) (map[string]*domain.ReservedNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReservedNumbers", ctx)
+	ret := m.ctrl.Call(m, "ReservedNumbers", arg0)
 	ret0, _ := ret[0].(map[string]*domain.ReservedNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReservedNumbers indicates an expected call of ReservedNumbers.
-func (mr *MockNumberManagerMockRecorder) ReservedNumbers(ctx interface{}) *gomock.Call {
+func (mr *MockNumberManagerMockRecorder) ReservedNumbers(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReservedNumbers", reflect.TypeOf((*MockNumberManager)(nil).ReservedNumbers), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReservedNumbers", reflect.TypeOf((*MockNumberManager)(nil).ReservedNumbers), arg0)
 }
