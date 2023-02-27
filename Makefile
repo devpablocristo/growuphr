@@ -1,6 +1,6 @@
 SHELL:=/bin/bash -O extglob
-BINARY=number-manager
-VERSION=0.1.0
+BINARY=num-man
+VERSION=0.1
 LDFLAGS=-ldflags "-X main.Version=${VERSION}"
 
 #go tool commands
@@ -13,6 +13,7 @@ run:
 ## tests
 test:
 	@go test ./...
+	
 ## docker compose
 up:
 	docker-compose up --build

@@ -7,7 +7,6 @@ import (
 )
 
 //go:generate mockgen -source=./storage.go -destination=../../../mocks/storage_mock.go -package=mocks
-
 type Storage interface {
 	Create(context.Context, *domain.ReservedNumber) error
 	Read(context.Context, string) (*domain.ReservedNumber, error)

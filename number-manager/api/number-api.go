@@ -9,8 +9,6 @@ import (
 )
 
 func StartApi(wg *sync.WaitGroup, port string) {
-	//defer wg.Done()
-
 	mdb := mapdb.NewMapDB()
 	nmr := application.NewNumberManager(mdb)
 	han := handler.NewHandler(nmr)

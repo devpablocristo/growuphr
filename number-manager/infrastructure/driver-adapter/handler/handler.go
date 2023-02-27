@@ -33,7 +33,6 @@ func (h *Handler) ReserveNumber(w http.ResponseWriter, r *http.Request) {
 
 	newUserName := chi.URLParam(r, "username")
 	if newUserName == "" {
-		// aplicar api error
 		err := errors.New("empty path param")
 		responseErr := cmsapi.BadRequest("AddNumber", "handler", err)
 		w.WriteHeader(responseErr.StatusCode)
@@ -141,6 +140,4 @@ func (h *Handler) ReservedNumbers(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-
-	fmt.Println(list)
 }
